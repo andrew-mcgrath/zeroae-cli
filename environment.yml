@@ -1,6 +1,6 @@
-name: {{ cookiecutter.project_repo }}-dev
+name: zeroae-cli-dev
 channels:
-  - {{ cookiecutter.anaconda_organization }}
+  - zeroae
   - conda-forge
   - defaults
 dependencies:
