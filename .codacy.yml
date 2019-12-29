@@ -5,3 +5,4 @@ exclude_paths:
   - 'tests/*'
   - 'benchmarks/**/*'
   - 'setup.py'
+  - '.github/**/*'
