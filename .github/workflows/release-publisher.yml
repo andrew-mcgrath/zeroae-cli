@@ -69,6 +69,7 @@ jobs:
     needs:
       - create-sdist
       - create-bdist-wheel
+      - conda-publish
     strategy:
       matrix:
         artifact-name:
@@ -190,7 +191,6 @@ jobs:
           activate-environment: ''
           auto-activate-base: true
           conda-build-version: 3.18
-          condarc-file: .github/condarc.yml
       - uses: actions/cache@v1
         id: conda-pkgs-cache
         with:
