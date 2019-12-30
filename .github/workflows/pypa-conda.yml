@@ -84,25 +84,19 @@ jobs:
           path: dist
 
   #
-  # Ensure the source distribution passes unit tests
-  #   - These must run on every pull-request commit
-  #   - They should run on as many architectures as we expect to support
-  serverless-tox:
-    name: pypa-detox
+  # Create the test distribution
+  #   - It must start from the source distribution
+  #   - It is architecture independent
+  create-tdist:
+    name: custom-tdist
     needs:
       - create-sdist
-      - create-bdist-wheel
-    if: github.event_name == 'pull_request'
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: [3.8]
+        os: [ubuntu-latest]
+        python-version: [3.7]
     runs-on: ${{ matrix.os }}
     steps:
-      #
-      # Download *Source* and Binary distributions
-      #   - Source: includes the "test" artifacts
-      #   - Binary: May be lengthy to compute
       - name: Download the source distribution
         uses: actions/download-artifact@v1.0.0
         with:
@@ -112,12 +106,45 @@ jobs:
       - name: Unpack the source distribution
         run: |
           tar -xvf *.tar.gz --strip 1
-          rm *.tar.gz
-      - name: Download the bdist-wheel distribution
+          rm -f *.tar.gz
+
+      # Create the test distribution
+      - name: Create test distribution
+        run: |
+          mkdir dist
+          mv .coveragerc .github/codecov.yml setup.cfg setup.py tests dist
+      - uses: actions/upload-artifact@v1.0.0
+        with:
+          name: custom-tdist
+          path: dist
+
+
+  #
+  # Ensure pypa distribution passes unit tests
+  #   - These must run on every pull-request commit
+  #   - They should run on as many architectures as we expect to support
+  serverless-tox:
+    name: pypa-detox
+    needs:
+      - create-tdist
+      - create-bdist-wheel
+    if: github.event_name == 'pull_request'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: [3.8]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Download the binary distribution
         uses: actions/download-artifact@v1.0.0
         with:
           name: pypa-bdist-wheel
           path: dist
+      - name: Download the test distribution
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: custom-tdist
+          path: .
 
       #
       # Setup the test environment, python + .whl + .whl[test]
@@ -132,12 +159,13 @@ jobs:
         id: cache
         with:
           path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{  matrix.os }}-py${{ matrix.python-version }}-pip-${{ hashFiles('setup.py') }}
-      - name: Install binary and test
+          key: ${{ matrix.os }}-py${{ matrix.python-version }}-pip-${{ hashFiles('setup.py') }}
+      - name: Install binary and test dependencies
         shell: bash
         run: |
           find dist -type f -name '*.whl' -exec pip install {} +
           find dist -type f -name '*.whl' -exec pip install {}[test] \;
+          rm -rf dist
 
       #
       # Runs the test with coverage
