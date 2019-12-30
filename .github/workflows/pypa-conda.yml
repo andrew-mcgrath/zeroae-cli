@@ -1,12 +1,12 @@
+#
+# To update pypa-conda to the latest version
+#   hub remote add sodre/ghw-pypa-conda
+#
 name: pypa-conda
 on:
   release:
-    types:
-      - published
+    types: [published]
   pull_request:
-# pull_request:
-#   paths-ignore:
-#     - '.github/**'
 jobs:
   #
   # Create the PyPA source distribution
