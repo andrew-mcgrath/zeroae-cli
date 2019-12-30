@@ -2,8 +2,7 @@
 zeroae's cli
 ============
 
-.. image:: https://github.com/zeroae/zeroae-cli/workflows/pypa-conda/badge.svg
-   :target: https://github.com/zeroae/zeroae-cli/workflows/pypa-conda
+.. image:: https://img.shields.io/github/workflow/status/zeroae/zeroae-cli/pypa-conda?label=pypa-conda&logo=github&style=flat-square
 
 .. image:: https://img.shields.io/conda/v/zeroae/zeroae-cli?logo=anaconda&style=flat-square
    :target: https://anaconda.org/zeroae/zeroae-cli
